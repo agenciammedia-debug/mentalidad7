@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MENTALIDAD 7</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mentalidad 7">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-32.png">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050505;--card:#111;--line:#222;--gold:#d4af37;--txt:#f2f2f2;--mut:#8a8a8a;--red:#e10600}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);overscroll-behavior-y:none}
+body{color:var(--txt);font-family:Inter,sans-serif;padding-bottom:calc(90px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+textarea,input{-webkit-user-select:text;user-select:text}
+h1,h2,.big{font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
+header{padding:calc(20px + env(safe-area-inset-top)) 18px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#151515,#050505)}
+header h1{font-size:54px;line-height:.9}header h1 span{color:var(--gold)}
+.sub{color:var(--mut);font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-top:6px}
+.wrap{max-width:720px;margin:auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.mantra{border-left:4px solid var(--gold)}.mantra .big{font-size:30px;line-height:1}
+.label{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;font-weight:800;margin-bottom:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{text-align:center}.stat .big{font-size:42px;color:var(--gold)}.stat small{color:var(--mut);font-size:11px}
+.q h2{font-size:28px}.q p{color:var(--mut);font-size:13px;margin:2px 0 10px}
+textarea{width:100%;min-height:80px;background:#0a0a0a;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font:16px Inter;resize:vertical}
+textarea:focus{outline:1px solid var(--gold)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+button{font:800 13px Inter;letter-spacing:1px;border:0;border-radius:30px;padding:10px 16px;cursor:pointer;background:#222;color:var(--txt)}
+button.gold{background:var(--gold);color:#000}button.rec{background:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 14px;border:1px solid var(--line);border-radius:30px;font-size:13px;cursor:pointer;user-select:none}
+.chip.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:800}
+input[type=range]{width:100%;accent-color:var(--gold)}
+audio{height:34px;max-width:100%}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#000;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav a{flex:1;text-align:center;padding:14px 0;font:800 12px Inter;letter-spacing:2px;color:var(--mut);cursor:pointer}
+nav a.on{color:var(--gold);border-top:2px solid var(--gold)}
+.view{display:none}.view.on{display:block}
+.entry h3{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px}
+.entry .meta{color:var(--mut);font-size:12px}.entry p{font-size:14px;margin-top:6px}.entry b{color:var(--gold)}
+.entry a{color:var(--gold);font-size:12px;display:block;margin-top:4px}
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-weight:800;padding:12px 20px;border-radius:30px;display:none;z-index:9}
+.breath{width:220px;height:220px;border-radius:50%;margin:30px auto;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;transition:transform 4s linear;font-family:'Bebas Neue';font-size:34px;letter-spacing:2px}
+.rule{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}.rule .big{font-size:34px;color:var(--gold);min-width:40px}
+svg text{fill:var(--mut);font:10px Inter}
+#login{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;gap:14px}
+#login img{width:110px;border-radius:24px}
+#login input{width:100%;max-width:320px;background:#0a0a0a;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:14px;font:16px Inter;text-align:center}
+.gear{position:absolute;right:18px;top:calc(22px + env(safe-area-inset-top));color:var(--mut);font-size:22px;cursor:pointer}
+header{position:relative}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="login"><img src="icons/icon-512.png" alt=""><h1 style="font-size:44px">MENTALIDAD <span style="color:var(--gold)">7</span></h1>
+  <p style="color:var(--mut);font-size:13px">Ingresa tu clave privada</p>
+  <input id="pin" type="password" placeholder="Clave" autocomplete="current-password">
+  <button class="gold" onclick="login()">ENTRAR</button></div>
+<header><span class="gear" onclick="logout()" title="Cambiar clave">⚙</span><h1>MENTALIDAD <span>7</span></h1><div class="sub">Disciplina · Conciencia · Decisión</div></header>
+
+<div class="wrap">
+<!-- HOY -->
+<section id="v-hoy" class="view on">
+  <div class="card mantra"><div class="label">Principio del día</div><div class="big" id="mantra"></div></div>
+  <div class="card stats">
+    <div class="stat"><div class="big" id="sRacha">0</div><small>DÍAS SEGUIDOS</small></div>
+    <div class="stat"><div class="big" id="sTotal">0</div><small>REGISTROS</small></div>
+    <div class="stat"><div class="big" id="sCumpl">0%</div><small>DECISIONES CUMPLIDAS</small></div>
+  </div>
+
+  <div class="card"><div class="label">Emoción principal</div><div class="chips" id="emos"></div></div>
+  <div class="card">
+    <div class="label">Intensidad: <span id="vInt">5</span>/10</div><input type="range" id="int" min="1" max="10" value="5">
+    <div class="label" style="margin-top:14px">Energía: <span id="vEne">5</span>/10</div><input type="range" id="ene" min="1" max="10" value="5">
+  </div>
+  <div id="qs"></div>
+  <div class="card"><div class="label">Hábitos de campeón (hoy)</div><div class="chips" id="habs"></div></div>
+  <button class="gold" style="width:100%;padding:18px;font-size:16px" id="btnSave" onclick="guardar()">GUARDAR REGISTRO</button>
+</section>
+
+<!-- REGISTRO -->
+<section id="v-reg" class="view">
+  <div class="card"><div class="label">Intensidad (dorado) vs Energía (blanco)</div><div id="chart"></div></div>
+  <div class="card"><div class="label">Emociones más frecuentes</div><div id="topEmo" class="chips"></div></div>
+  <div id="lista"></div>
+</section>
+
+<!-- RESPIRA -->
+<section id="v-res" class="view">
+  <div class="card" style="text-align:center">
+    <div class="label">Respiración cuadrada 4-4-4-4 · antes de decidir</div>
+    <div class="breath" id="circ">LISTO</div>
+    <button class="gold" id="btnB" onclick="respirar()">INICIAR (4 CICLOS)</button>
+  </div>
+</section>
+
+<!-- CÓDIGO -->
+<section id="v-cod" class="view"><div class="card" id="codigo"></div></section>
+</div>
+
+<nav>
+  <a class="on" data-v="hoy">HOY</a><a data-v="reg">REGISTRO</a><a data-v="res">RESPIRA</a><a data-v="cod">CÓDIGO</a>
+</nav>
+
+<script>
+/* ===== CONFIGURA AQUÍ la URL de tu Aplicación web de Apps Script (termina en /exec) ===== */
+const API_URL='PEGA_AQUI_TU_URL_DE_APPS_SCRIPT';
+
+const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+let TOKEN=store.get('m7_token')||'';
+async function api(action,extra={}){
+  const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action,token:TOKEN,...extra})});
+  const j=await r.json();
+  if(!j.ok){if(j.error==='Clave incorrecta')showLogin();throw new Error(j.error)}
+  return j.data;
+}
+function showLogin(){document.getElementById('login').style.display='flex'}
+async function login(){
+  TOKEN=document.getElementById('pin').value.trim();if(!TOKEN)return;
+  try{await api('ping');store.set('m7_token',TOKEN);document.getElementById('login').style.display='none';cargar()}
+  catch(e){toast(e.message==='Clave incorrecta'?'Clave incorrecta':'Sin conexión con la API')}
+}
+function logout(){if(confirm('¿Cambiar la clave de acceso?')){store.del('m7_token');TOKEN='';showLogin()}}
+
+const QS=[
+ {k:'q1',t:'¿Qué está pasando?',h:'Solo hechos. Sin juicio ni drama.'},
+ {k:'q2',t:'¿Cómo me hace sentir?',h:'Nombra la emoción exacta. Lo que se nombra, se domina.'},
+ {k:'q3',t:'¿Qué es lo que más me duele?',h:'Ve a la raíz, no al síntoma.'},
+ {k:'q4',t:'¿Qué puedo controlar?',h:'Tu esfuerzo, tu actitud, tu respuesta. Nada más.'},
+ {k:'q5',t:'¿Qué decisión tomo hoy?',h:'Una acción concreta, medible y para hoy.'},
+ {k:'q6',t:'¿Qué aprendo de esto?',h:'Cada caída es entrenamiento.'},
+ {k:'q7',t:'Agradezco por…',h:'Tres cosas. La gratitud baja el ruido.'}
+];
+const EMOS=['Ansiedad','Frustración','Tristeza','Ira','Miedo','Inseguridad','Cansancio','Calma','Enfoque','Motivación','Confianza','Alegría'];
+const HABS=['Dormí 7h+','Entrené','Agua 2L+','Comí limpio','Respiré/medité','Sin redes 1ª hora','Leí 10 min','Visualicé mi meta'];
+const PRINCIPIOS=[
+ 'El talento abre la puerta. La disciplina te mantiene dentro.',
+ 'No negocies con tu versión cansada.',
+ 'Entrena cuando nadie mira. Brilla cuando todos miran.',
+ 'La crítica es combustible, no freno.',
+ 'Controla lo controlable. Suelta el resto.',
+ 'Una mala jornada no define una temporada.',
+ 'Tu cuerpo es tu herramienta: duerme, come, entrena.',
+ 'La confianza se construye con promesas cumplidas a ti mismo.',
+ 'Sé el primero en llegar y el último en irse.',
+ 'La presión es un privilegio.',
+ 'Siempre hay un nivel más. Búscalo.',
+ 'Emoción reconocida, decisión con cabeza fría.',
+ 'Pequeñas victorias diarias, grandes títulos al final.',
+ 'No esperes motivación: crea el hábito.'
+];
+let sel={emo:'',habs:new Set()}, audios={}, rec=null, chunks=[], data=[];
+const $=id=>document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
+
+/* ---------- UI ---------- */
+function init(){
+  const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+  $('mantra').textContent=PRINCIPIOS[doy%PRINCIPIOS.length];
+  $('emos').innerHTML=EMOS.map(e=>`<div class="chip" onclick="pickEmo(this,'${e}')">${e}</div>`).join('');
+  $('habs').innerHTML=HABS.map(h=>`<div class="chip" onclick="pickHab(this,'${h}')">${h}</div>`).join('');
+  $('qs').innerHTML=QS.map((q,i)=>`<div class="card q"><div class="label">${i<5?'Pregunta '+(i+1):'Plus'}</div><h2>${q.t}</h2><p>${q.h}</p>
+    <textarea id="t_${q.k}" placeholder="Escribe o usa audio…"></textarea>
+    <div class="row"><button id="r_${q.k}" onclick="toggleRec('${q.k}')">🎙 GRABAR AUDIO</button>
+    ${SR?`<button id="d_${q.k}" onclick="dictar('${q.k}')">🗣 DICTAR A TEXTO</button>`:''}
+    <input type="file" accept="audio/*" capture id="f_${q.k}" style="display:none" onchange="fileAudio('${q.k}',this)">
+    <span id="a_${q.k}"></span></div></div>`).join('');
+  $('codigo').innerHTML='<div class="label">Mi código de campeón</div>'+[
+   ['01','Check-in diario','Mañana: responde las 5 preguntas. Noche: marca si cumpliste tu decisión.'],
+   ['02','Nombra, no reprimas','Ponerle nombre exacto a la emoción reduce su intensidad.'],
+   ['03','Respira antes de decidir','4 ciclos de respiración cuadrada cuando la intensidad sea 7+.'],
+   ['04','Una decisión, no diez','Una acción concreta al día. Cumplirla construye confianza.'],
+   ['05','Cuerpo = mente','Sueño, entrenamiento, hidratación y comida: la base de todo.'],
+   ['06','Revisión semanal','Domingo: mira tu registro. ¿Qué emoción se repite? ¿Qué la dispara?'],
+   ['07','Visualiza','2 minutos al día viéndote lograr tu objetivo con detalle.']
+  ].map(r=>`<div class="rule"><div class="big">${r[0]}</div><div><b>${r[1]}</b><p style="color:var(--mut);font-size:13px">${r[2]}</p></div></div>`).join('');
+  $('int').oninput=e=>$('vInt').textContent=e.target.value;
+  $('ene').oninput=e=>$('vEne').textContent=e.target.value;
+  document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>{
+    document.querySelectorAll('nav a,.view').forEach(x=>x.classList.remove('on'));
+    a.classList.add('on');$('v-'+a.dataset.v).classList.add('on');window.scrollTo(0,0);
+  });
+  $('pin').onkeydown=e=>{if(e.key==='Enter')login()};
+  TOKEN?cargar():showLogin();
+}
+function pickEmo(el,e){document.querySelectorAll('#emos .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');sel.emo=e}
+function pickHab(el,h){el.classList.toggle('on');sel.habs.has(h)?sel.habs.delete(h):sel.habs.add(h)}
+
+/* ---------- AUDIO ---------- */
+async function toggleRec(k){
+  if(rec&&rec.state==='recording'){rec.stop();return}
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks=[];rec=new MediaRecorder(s);
+    rec.ondataavailable=e=>chunks.push(e.data);
+    rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());setAudio(k,new Blob(chunks,{type:rec.mimeType||'audio/webm'}));
+      $('r_'+k).classList.remove('rec');$('r_'+k).textContent='🎙 REGRABAR';rec=null};
+    rec.start();$('r_'+k).classList.add('rec');$('r_'+k).textContent='⏹ DETENER';
+  }catch(e){toast('Micrófono no disponible: usa el grabador del dispositivo');$('f_'+k).click()}
+}
+function fileAudio(k,inp){if(inp.files[0])setAudio(k,inp.files[0])}
+function setAudio(k,blob){
+  const r=new FileReader();
+  r.onload=()=>{audios[k]={b64:r.result.split(',')[1],mime:blob.type||'audio/webm'};
+    $('a_'+k).innerHTML=`<audio controls src="${URL.createObjectURL(blob)}"></audio>`};
+  r.readAsDataURL(blob);
+}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let sr=null;
+function dictar(k){
+  if(sr){sr.stop();return}
+  sr=new SR();sr.lang='es-PE';sr.continuous=true;sr.interimResults=false;
+  const ta=$('t_'+k),b=$('d_'+k);
+  sr.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)ta.value+=(ta.value?' ':'')+e.results[i][0].transcript};
+  sr.onend=()=>{b.classList.remove('rec');b.textContent='🗣 DICTAR A TEXTO';sr=null};
+  sr.onerror=()=>toast('Dictado no disponible aquí');
+  sr.start();b.classList.add('rec');b.textContent='⏹ PARAR DICTADO';
+}
+
+/* ---------- GUARDAR ---------- */
+function guardar(){
+  const resp={};QS.forEach(q=>resp[q.k]=$('t_'+q.k).value.trim());
+  if(!sel.emo&&!resp.q1&&!Object.keys(audios).length){toast('Responde al menos algo');return}
+  const b=$('btnSave');b.disabled=true;b.textContent='GUARDANDO…';
+  api('save',{entry:{emocion:sel.emo,intensidad:+$('int').value,energia:+$('ene').value,resp,habitos:[...sel.habs],audios}})
+  .then(()=>{
+    toast('Registro guardado 💪');b.disabled=false;b.textContent='GUARDAR REGISTRO';
+    QS.forEach(q=>{$('t_'+q.k).value='';$('a_'+q.k).innerHTML=''});audios={};
+    document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));sel={emo:'',habs:new Set()};cargar();window.scrollTo(0,0);
+  }).catch(e=>{toast('Error: '+e.message);b.disabled=false;b.textContent='GUARDAR REGISTRO'});
+}
+
+/* ---------- REGISTRO ---------- */
+function cargar(){
+  try{const c=JSON.parse(store.get('m7_cache')||'null');if(c){data=c;render()}}catch(e){}
+  api('list').then(d=>{data=d;store.set('m7_cache',JSON.stringify(d));render()}).catch(e=>toast('Sin conexión: mostrando datos guardados'));
+}
+const dkey=d=>new Date(d).toLocaleDateString('en-CA');
+function render(){
+  // stats
+  const days=new Set(data.map(e=>dkey(e.fecha)));let r=0,d=new Date();
+  if(!days.has(dkey(d)))d.setDate(d.getDate()-1);
+  while(days.has(dkey(d))){r++;d.setDate(d.getDate()-1)}
+  const ev=data.filter(e=>e.done);
+  $('sRacha').textContent=r;$('sTotal').textContent=data.length;
+  $('sCumpl').textContent=ev.length?Math.round(ev.filter(e=>e.done==='SÍ').length/ev.length*100)+'%':'—';
+  // top emociones
+  const c={};data.forEach(e=>e.emocion&&(c[e.emocion]=(c[e.emocion]||0)+1));
+  $('topEmo').innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>`<div class="chip">${x[0]} · ${x[1]}</div>`).join('')||'<small style="color:var(--mut)">Sin datos aún</small>';
+  chart(data.slice(0,30).reverse());
+  // lista
+  const esc=s=>String(s||'').replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+  $('lista').innerHTML=data.map(e=>{
+    const f=new Date(e.fecha);
+    const links=e.audios.split('\n').filter(Boolean).map(l=>{const p=l.split(': ');return`<a href="${p[1]}" target="_blank">▶ Audio ${p[0]}</a>`}).join('');
+    return`<div class="card entry"><h3>${esc(e.emocion)||'Registro'} · ${e.int}/10</h3>
+    <div class="meta">${f.toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'short'})} · ${f.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})} · Energía ${e.ene}/10</div>
+    ${e.q1?`<p><b>Pasa:</b> ${esc(e.q1)}</p>`:''}${e.q2?`<p><b>Siento:</b> ${esc(e.q2)}</p>`:''}
+    ${e.q3?`<p><b>Duele:</b> ${esc(e.q3)}</p>`:''}${e.q4?`<p><b>Controlo:</b> ${esc(e.q4)}</p>`:''}
+    ${e.q5?`<p><b>Decisión:</b> ${esc(e.q5)}</p>`:''}${e.q6?`<p><b>Aprendo:</b> ${esc(e.q6)}</p>`:''}
+    ${e.q7?`<p><b>Gratitud:</b> ${esc(e.q7)}</p>`:''}${e.habitos?`<p><b>Hábitos:</b> ${esc(e.habitos)}</p>`:''}${links}
+    <div class="row"><span style="font-size:12px;color:var(--mut)">¿Cumpliste tu decisión?</span>
+    <button class="${e.done==='SÍ'?'gold':''}" onclick="done(${e.row},true)">SÍ</button>
+    <button class="${e.done==='NO'?'gold':''}" onclick="done(${e.row},false)">NO</button></div></div>`}).join('');
+}
+function done(row,v){api('done',{row,val:v}).then(()=>{const e=data.find(x=>x.row===row);e.done=v?'SÍ':'NO';store.set('m7_cache',JSON.stringify(data));render();toast(v?'Promesa cumplida 🏆':'Mañana se compensa')}).catch(e=>toast('Error: '+e.message))}
+function chart(d){
+  if(d.length<2){$('chart').innerHTML='<small style="color:var(--mut)">Necesitas 2+ registros</small>';return}
+  const W=640,H=180,P=24,x=i=>P+i*(W-2*P)/(d.length-1),y=v=>H-P-(v-1)*(H-2*P)/9;
+  const line=(k,col)=>`<polyline fill="none" stroke="${col}" stroke-width="2.5" points="${d.map((e,i)=>x(i)+','+y(e[k]||1)).join(' ')}"/>`;
+  $('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%">
+   ${[1,5,10].map(v=>`<line x1="${P}" x2="${W-P}" y1="${y(v)}" y2="${y(v)}" stroke="#222"/><text x="2" y="${y(v)+3}">${v}</text>`).join('')}
+   ${line('ene','#f2f2f2')}${line('int','#d4af37')}</svg>`;
+}
+
+/* ---------- RESPIRACIÓN ---------- */
+let breathing=false;
+async function respirar(){
+  if(breathing)return;breathing=true;$('btnB').disabled=true;
+  const c=$('circ'),w=ms=>new Promise(r=>setTimeout(r,ms));
+  const fases=[['INHALA',1.3],['SOSTÉN',1.3],['EXHALA',1],['SOSTÉN',1]];
+  for(let n=0;n<4;n++)for(const[f,s]of fases){c.textContent=f;c.style.transform=`scale(${s})`;await w(4000)}
+  c.textContent='LISTO';c.style.transform='scale(1)';breathing=false;$('btnB').disabled=false;toast('Mente fría. Ahora decide.');
+}
+init();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
