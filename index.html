@@ -49,7 +49,7 @@ nav a.on{color:var(--gold);border-top:2px solid var(--gold)}
 .entry .meta{color:var(--mut);font-size:12px}.entry p{font-size:14px;margin-top:6px}.entry b{color:var(--gold)}
 .entry a{color:var(--gold);font-size:12px;display:block;margin-top:4px}
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-weight:800;padding:12px 20px;border-radius:30px;display:none;z-index:9}
-.breath{width:220px;height:220px;border-radius:50%;margin:30px auto;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;transition:transform 4s linear;font-family:'Bebas Neue';font-size:34px;letter-spacing:2px}
+.breath{width:200px;height:200px;border-radius:50%;margin:70px auto 76px;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;transition:transform 4s linear;font-family:'Bebas Neue';font-size:34px;letter-spacing:2px}
 .rule{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}.rule .big{font-size:34px;color:var(--gold);min-width:40px}
 svg text{fill:var(--mut);font:10px Inter}
 #login{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;gap:14px}
@@ -62,9 +62,16 @@ header{position:relative}
 <body>
 <div id="toast"></div>
 <div id="login"><img src="icons/icon-512.png" alt=""><h1 style="font-size:44px">MENTALIDAD <span style="color:var(--gold)">7</span></h1>
-  <p style="color:var(--mut);font-size:13px">Ingresa tu clave privada</p>
-  <input id="pin" type="password" placeholder="Clave" autocomplete="current-password">
-  <button class="gold" onclick="login()">ENTRAR</button></div>
+  <div id="lkFace" style="display:none;flex-direction:column;align-items:center;gap:14px">
+    <p style="color:var(--mut);font-size:13px" id="lkMsg">Desbloquea con tu cara</p>
+    <button class="gold" id="btnFace" onclick="faceAction()">ENTRAR CON FACE ID</button>
+    <a style="color:var(--mut);font-size:12px;cursor:pointer;text-decoration:underline" onclick="showPin()">Usar clave</a>
+  </div>
+  <div id="lkPin" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+    <p style="color:var(--mut);font-size:13px">Ingresa tu clave privada (solo la primera vez)</p>
+    <input id="pin" type="password" placeholder="Clave" autocomplete="current-password">
+    <button class="gold" onclick="login()">ENTRAR</button>
+  </div></div>
 <header><span class="gear" onclick="logout()" title="Cambiar clave">⚙</span><h1>MENTALIDAD <span>7</span></h1><div class="sub">Disciplina · Conciencia · Decisión</div></header>
 
 <div class="wrap">
@@ -98,6 +105,7 @@ header{position:relative}
 <section id="v-res" class="view">
   <div class="card" style="text-align:center">
     <div class="label">Respiración cuadrada 4-4-4-4 · antes de decidir</div>
+    <p style="color:var(--mut);font-size:12px">Con voz y sonido: sube el volumen y quita el modo silencio.</p>
     <div class="breath" id="circ">LISTO</div>
     <button class="gold" id="btnB" onclick="respirar()">INICIAR (4 CICLOS)</button>
   </div>
@@ -123,13 +131,52 @@ async function api(action,extra={}){
   if(!j.ok){if(j.error==='Clave incorrecta')showLogin();throw new Error(j.error)}
   return j.data;
 }
-function showLogin(){document.getElementById('login').style.display='flex'}
+/* ---------- FACE ID (WebAuthn / llave de acceso del iPhone) ---------- */
+const HAS_FACE=!!(window.PublicKeyCredential&&navigator.credentials);
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+let loaded=false;
+function showLogin(){document.getElementById('login').style.display='flex';
+  const face=HAS_FACE&&TOKEN;
+  document.getElementById('lkFace').style.display=face?'flex':'none';
+  document.getElementById('lkPin').style.display=face?'none':'flex';
+  const has=!!store.get('m7_cred');
+  document.getElementById('btnFace').textContent=has?'ENTRAR CON FACE ID':'ACTIVAR FACE ID';
+  document.getElementById('lkMsg').textContent=has?'Desbloquea con tu cara':'Activa Face ID para no volver a escribir la clave';
+}
+function showPin(){document.getElementById('lkFace').style.display='none';document.getElementById('lkPin').style.display='flex'}
+function unlock(){document.getElementById('login').style.display='none';if(!loaded){loaded=true;cargar()}}
+async function faceCreate(){
+  const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:'Mentalidad 7'},
+    user:{id:rnd(16),name:'mentalidad7',displayName:'Mentalidad 7'},
+    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},timeout:60000}});
+  store.set('m7_cred',b64(c.rawId));
+}
+async function faceGet(){
+  await navigator.credentials.get({publicKey:{challenge:rnd(32),userVerification:'required',timeout:60000,
+    allowCredentials:[{type:'public-key',id:unb64(store.get('m7_cred'))}]}});
+}
+async function faceAction(){
+  try{
+    if(store.get('m7_cred'))await faceGet();else{await faceCreate();toast('Face ID activado ✅')}
+    unlock();
+  }catch(e){toast('Face ID cancelado o no disponible')}
+}
 async function login(){
   TOKEN=document.getElementById('pin').value.trim();if(!TOKEN)return;
-  try{await api('ping');store.set('m7_token',TOKEN);document.getElementById('login').style.display='none';cargar()}
-  catch(e){toast(e.message==='Clave incorrecta'?'Clave incorrecta':'Sin conexión con la API')}
+  try{await api('ping');store.set('m7_token',TOKEN);store.del('m7_cred');
+    if(HAS_FACE){showLogin()}else unlock();
+  }catch(e){toast(e.message==='Clave incorrecta'?'Clave incorrecta':'Sin conexión con la API')}
 }
-function logout(){if(confirm('¿Cambiar la clave de acceso?')){store.del('m7_token');TOKEN='';showLogin()}}
+// Bloquear de nuevo si la app estuvo en segundo plano más de 1 minuto
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)hiddenAt=Date.now();
+  else if(hiddenAt&&Date.now()-hiddenAt>60000&&TOKEN&&HAS_FACE&&store.get('m7_cred'))showLogin();
+});
+function logout(){if(confirm('¿Cambiar la clave de acceso?')){store.del('m7_token');store.del('m7_cred');TOKEN='';showLogin()}}
 
 const QS=[
  {k:'q1',t:'¿Qué está pasando?',h:'Solo hechos. Sin juicio ni drama.'},
@@ -158,7 +205,7 @@ const PRINCIPIOS=[
  'Pequeñas victorias diarias, grandes títulos al final.',
  'No esperes motivación: crea el hábito.'
 ];
-let sel={emo:'',habs:new Set()}, audios={}, rec=null, chunks=[], data=[];
+let sel={emos:new Set(),habs:new Set()}, audios={}, data=[];
 const $=id=>document.getElementById(id);
 function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 
@@ -169,11 +216,8 @@ function init(){
   $('emos').innerHTML=EMOS.map(e=>`<div class="chip" onclick="pickEmo(this,'${e}')">${e}</div>`).join('');
   $('habs').innerHTML=HABS.map(h=>`<div class="chip" onclick="pickHab(this,'${h}')">${h}</div>`).join('');
   $('qs').innerHTML=QS.map((q,i)=>`<div class="card q"><div class="label">${i<5?'Pregunta '+(i+1):'Plus'}</div><h2>${q.t}</h2><p>${q.h}</p>
-    <textarea id="t_${q.k}" placeholder="Escribe o usa audio…"></textarea>
-    <div class="row"><button id="r_${q.k}" onclick="toggleRec('${q.k}')">🎙 GRABAR AUDIO</button>
-    ${SR?`<button id="d_${q.k}" onclick="dictar('${q.k}')">🗣 DICTAR A TEXTO</button>`:''}
-    <input type="file" accept="audio/*" capture id="f_${q.k}" style="display:none" onchange="fileAudio('${q.k}',this)">
-    <span id="a_${q.k}"></span></div></div>`).join('');
+    <textarea id="t_${q.k}" placeholder="Escribe o dicta…"></textarea>
+    <div class="row"><button id="d_${q.k}" onclick="dictar('${q.k}')">DICTAR TEXTO</button></div></div>`).join('');
   $('codigo').innerHTML='<div class="label">Mi código de campeón</div>'+[
    ['01','Check-in diario','Mañana: responde las 5 preguntas. Noche: marca si cumpliste tu decisión.'],
    ['02','Nombra, no reprimas','Ponerle nombre exacto a la emoción reduce su intensidad.'],
@@ -190,52 +234,37 @@ function init(){
     a.classList.add('on');$('v-'+a.dataset.v).classList.add('on');window.scrollTo(0,0);
   });
   $('pin').onkeydown=e=>{if(e.key==='Enter')login()};
-  TOKEN?cargar():showLogin();
+  if(!TOKEN)showLogin();
+  else if(HAS_FACE){showLogin();if(store.get('m7_cred'))faceAction()}
+  else unlock();
 }
-function pickEmo(el,e){document.querySelectorAll('#emos .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');sel.emo=e}
+function pickEmo(el,e){el.classList.toggle('on');sel.emos.has(e)?sel.emos.delete(e):sel.emos.add(e)}
 function pickHab(el,h){el.classList.toggle('on');sel.habs.has(h)?sel.habs.delete(h):sel.habs.add(h)}
 
-/* ---------- AUDIO ---------- */
-async function toggleRec(k){
-  if(rec&&rec.state==='recording'){rec.stop();return}
-  try{
-    const s=await navigator.mediaDevices.getUserMedia({audio:true});
-    chunks=[];rec=new MediaRecorder(s);
-    rec.ondataavailable=e=>chunks.push(e.data);
-    rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());setAudio(k,new Blob(chunks,{type:rec.mimeType||'audio/webm'}));
-      $('r_'+k).classList.remove('rec');$('r_'+k).textContent='🎙 REGRABAR';rec=null};
-    rec.start();$('r_'+k).classList.add('rec');$('r_'+k).textContent='⏹ DETENER';
-  }catch(e){toast('Micrófono no disponible: usa el grabador del dispositivo');$('f_'+k).click()}
-}
-function fileAudio(k,inp){if(inp.files[0])setAudio(k,inp.files[0])}
-function setAudio(k,blob){
-  const r=new FileReader();
-  r.onload=()=>{audios[k]={b64:r.result.split(',')[1],mime:blob.type||'audio/webm'};
-    $('a_'+k).innerHTML=`<audio controls src="${URL.createObjectURL(blob)}"></audio>`};
-  r.readAsDataURL(blob);
-}
+/* ---------- DICTADO ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let sr=null;
 function dictar(k){
   if(sr){sr.stop();return}
+  if(!SR){$('t_'+k).focus();toast('Usa el micrófono 🎤 del teclado para dictar');return}
   sr=new SR();sr.lang='es-PE';sr.continuous=true;sr.interimResults=false;
   const ta=$('t_'+k),b=$('d_'+k);
   sr.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)ta.value+=(ta.value?' ':'')+e.results[i][0].transcript};
-  sr.onend=()=>{b.classList.remove('rec');b.textContent='🗣 DICTAR A TEXTO';sr=null};
-  sr.onerror=()=>toast('Dictado no disponible aquí');
-  sr.start();b.classList.add('rec');b.textContent='⏹ PARAR DICTADO';
+  sr.onend=()=>{b.classList.remove('rec');b.textContent='DICTAR TEXTO';sr=null};
+  sr.onerror=()=>{toast('Usa el micrófono 🎤 del teclado para dictar');$('t_'+k).focus()};
+  sr.start();b.classList.add('rec');b.textContent='PARAR DICTADO';
 }
 
 /* ---------- GUARDAR ---------- */
 function guardar(){
   const resp={};QS.forEach(q=>resp[q.k]=$('t_'+q.k).value.trim());
-  if(!sel.emo&&!resp.q1&&!Object.keys(audios).length){toast('Responde al menos algo');return}
+  if(!sel.emos.size&&!Object.values(resp).some(Boolean)){toast('Responde al menos algo');return}
   const b=$('btnSave');b.disabled=true;b.textContent='GUARDANDO…';
-  api('save',{entry:{emocion:sel.emo,intensidad:+$('int').value,energia:+$('ene').value,resp,habitos:[...sel.habs],audios}})
+  api('save',{entry:{emocion:[...sel.emos].join(', '),intensidad:+$('int').value,energia:+$('ene').value,resp,habitos:[...sel.habs],audios}})
   .then(()=>{
     toast('Registro guardado 💪');b.disabled=false;b.textContent='GUARDAR REGISTRO';
-    QS.forEach(q=>{$('t_'+q.k).value='';$('a_'+q.k).innerHTML=''});audios={};
-    document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));sel={emo:'',habs:new Set()};cargar();window.scrollTo(0,0);
+    QS.forEach(q=>{$('t_'+q.k).value=''});
+    document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));sel={emos:new Set(),habs:new Set()};cargar();window.scrollTo(0,0);
   }).catch(e=>{toast('Error: '+e.message);b.disabled=false;b.textContent='GUARDAR REGISTRO'});
 }
 
@@ -254,7 +283,7 @@ function render(){
   $('sRacha').textContent=r;$('sTotal').textContent=data.length;
   $('sCumpl').textContent=ev.length?Math.round(ev.filter(e=>e.done==='SÍ').length/ev.length*100)+'%':'—';
   // top emociones
-  const c={};data.forEach(e=>e.emocion&&(c[e.emocion]=(c[e.emocion]||0)+1));
+  const c={};data.forEach(e=>String(e.emocion||'').split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>c[x]=(c[x]||0)+1));
   $('topEmo').innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>`<div class="chip">${x[0]} · ${x[1]}</div>`).join('')||'<small style="color:var(--mut)">Sin datos aún</small>';
   chart(data.slice(0,30).reverse());
   // lista
@@ -283,13 +312,35 @@ function chart(d){
 }
 
 /* ---------- RESPIRACIÓN ---------- */
-let breathing=false;
+let breathing=false,actx=null,voz=null;
+function decir(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);
+  u.lang='es-ES';u.rate=.85;u.pitch=.9;if(voz)u.voice=voz;speechSynthesis.speak(u)}catch(e){}}
+function elegirVoz(){try{const v=speechSynthesis.getVoices();voz=v.find(x=>/^es[-_](MX|US|419|PE|ES)/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null}catch(e){}}
+if(window.speechSynthesis){elegirVoz();speechSynthesis.onvoiceschanged=elegirVoz}
+// Tono suave: sube al inhalar, baja al exhalar, campana al sostener
+function tono(tipo,seg){
+  if(!actx)return;const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
+  o.type='sine';o.connect(g);g.connect(actx.destination);
+  const f={INHALA:[196,392],EXHALA:[392,196],'SOSTÉN':[294,294]}[tipo];
+  o.frequency.setValueAtTime(f[0],t);o.frequency.linearRampToValueAtTime(f[1],t+seg);
+  const dur=tipo==='SOSTÉN'?1.2:seg;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.18,t+.25);
+  g.gain.linearRampToValueAtTime(tipo==='SOSTÉN'?0:.12,t+dur-.3);g.gain.linearRampToValueAtTime(0,t+dur);
+  o.start(t);o.stop(t+dur+.05);
+}
 async function respirar(){
   if(breathing)return;breathing=true;$('btnB').disabled=true;
+  // Desbloquear audio y voz en el toque (requisito de iPhone)
+  try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
+  decir('Cierra los ojos. Comenzamos.');
+  let wl=null;try{wl=await navigator.wakeLock.request('screen')}catch(e){}
   const c=$('circ'),w=ms=>new Promise(r=>setTimeout(r,ms));
-  const fases=[['INHALA',1.3],['SOSTÉN',1.3],['EXHALA',1],['SOSTÉN',1]];
-  for(let n=0;n<4;n++)for(const[f,s]of fases){c.textContent=f;c.style.transform=`scale(${s})`;await w(4000)}
-  c.textContent='LISTO';c.style.transform='scale(1)';breathing=false;$('btnB').disabled=false;toast('Mente fría. Ahora decide.');
+  await w(2600);
+  const fases=[['INHALA',1.3,'Inhala'],['SOSTÉN',1.3,'Sostén'],['EXHALA',1,'Exhala'],['SOSTÉN',1,'Sostén']];
+  for(let n=0;n<4;n++)for(const[f,s,v]of fases){c.textContent=f;c.style.transform=`scale(${s})`;decir(v);tono(f,4);await w(4000)}
+  c.textContent='LISTO';c.style.transform='scale(1)';decir('Listo. Mente fría. Ahora decide.');
+  try{wl&&wl.release()}catch(e){}
+  breathing=false;$('btnB').disabled=false;toast('Mente fría. Ahora decide.');
 }
 init();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
