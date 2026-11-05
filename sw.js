@@ -1,5 +1,8 @@
 // Cambia la versión cada vez que actualices la app para forzar la recarga en el iPhone
-const CACHE = 'm7-v5';
+// OneSignal (notificaciones push) comparte este mismo service worker
+try { importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'); } catch (e) {}
+
+const CACHE = 'm7-v7';
 const ASSETS = ['./', 'index.html', 'manifest.json', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
