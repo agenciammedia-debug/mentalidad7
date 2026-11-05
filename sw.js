@@ -1,5 +1,5 @@
 // Cambia la versión cada vez que actualices la app para forzar la recarga en el iPhone
-const CACHE = 'm7-v1';
+const CACHE = 'm7-v2';
 const ASSETS = ['./', 'index.html', 'manifest.json', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
