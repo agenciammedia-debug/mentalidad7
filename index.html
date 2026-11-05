@@ -81,7 +81,7 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
     <a style="color:var(--mut);font-size:12px;cursor:pointer;text-decoration:underline" onclick="showPin()">Usar clave</a>
   </div>
   <div id="lkPin" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
-    <p style="color:var(--mut);font-size:13px">Ingresa tu clave privada (solo la primera vez)</p>
+    <p style="color:var(--mut);font-size:13px" id="lkPinMsg">Ingresa tu clave privada (solo la primera vez)</p>
     <input id="pin" type="password" placeholder="Clave" autocomplete="current-password">
     <button class="gold" onclick="login()">ENTRAR</button>
   </div></div>
@@ -212,7 +212,13 @@ let TOKEN=store.get('m7_token')||'';
 async function api(action,extra={}){
   const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({action,token:TOKEN,...extra})});
   const j=await r.json();
-  if(!j.ok){if(j.error==='Clave incorrecta')showLogin();throw new Error(j.error)}
+  if(!j.ok){
+    if(j.error==='Clave incorrecta'){ // la clave del servidor cambió: Face ID no sirve, pedir la clave nueva
+      TOKEN='';store.del('m7_token');store.del('m7_cred');showLogin();
+      document.getElementById('lkPinMsg').textContent='La clave cambió en Apps Script. Ingresa la clave nueva (tus respuestas no se pierden).';
+    }
+    throw new Error(j.error);
+  }
   return j.data;
 }
 /* ---------- FACE ID (WebAuthn / llave de acceso del iPhone) ---------- */
@@ -246,11 +252,12 @@ async function faceAction(){
   try{
     if(store.get('m7_cred'))await faceGet();else{await faceCreate();toast('Face ID activado ✅')}
     unlock();
+    api('ping').catch(()=>{});
   }catch(e){toast('Face ID cancelado o no disponible')}
 }
 async function login(){
   TOKEN=document.getElementById('pin').value.trim();if(!TOKEN)return;
-  try{await api('ping');store.set('m7_token',TOKEN);store.del('m7_cred');
+  try{await api('ping');store.set('m7_token',TOKEN);store.del('m7_cred');document.getElementById('pin').value='';
     if(HAS_FACE){showLogin()}else unlock();
   }catch(e){toast(e.message==='Clave incorrecta'?'Clave incorrecta':'Sin conexión con la API')}
 }
