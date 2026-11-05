@@ -113,7 +113,7 @@ header{position:relative}
 
 <script>
 /* ===== CONFIGURA AQUÍ la URL de tu Aplicación web de Apps Script (termina en /exec) ===== */
-const API_URL='PEGA_AQUI_TU_URL_DE_APPS_SCRIPT';
+const API_URL='https://script.google.com/macros/s/AKfycbzYOdh9rDbDg7uR2P_hMzrQnfEPk9h9K4KjwbfmoE22TbJlwL42tonw8b2EY2Cp1lRS0g/exec';
 
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 let TOKEN=store.get('m7_token')||'';
