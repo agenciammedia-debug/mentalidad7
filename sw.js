@@ -2,7 +2,7 @@
 // OneSignal (notificaciones push) comparte este mismo service worker
 try { importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js'); } catch (e) {}
 
-const CACHE = 'm7-v8';
+const CACHE = 'm7-v10';
 const ASSETS = ['./', 'index.html', 'manifest.json', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
