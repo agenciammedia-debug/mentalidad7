@@ -48,7 +48,23 @@ nav a.on{color:var(--gold);border-top:2px solid var(--gold)}
 .entry h3{font-family:'Bebas Neue';font-size:24px;letter-spacing:1px}
 .entry .meta{color:var(--mut);font-size:12px}.entry p{font-size:14px;margin-top:6px}.entry b{color:var(--gold)}
 .entry a{color:var(--gold);font-size:12px;display:block;margin-top:4px}
-#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-weight:800;padding:12px 20px;border-radius:30px;display:none;z-index:9}
+#toast{position:fixed;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-weight:800;padding:12px 20px;border-radius:30px;display:none;z-index:50;white-space:nowrap}
+#splash{position:fixed;inset:0;background:#000;z-index:45;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease}
+#splash img{width:132px;border-radius:30px;animation:spIn 1s cubic-bezier(.2,1.4,.4,1) both,spGlow 1.6s ease .5s both}
+#splash h1{font-size:46px;opacity:0;animation:spUp .6s ease .55s both}#splash h1 span{color:var(--gold)}
+#splash .ln{height:2px;width:0;background:var(--gold);animation:spLn .7s ease .9s both}
+#splash small{color:var(--mut);font-size:11px;letter-spacing:4px;opacity:0;animation:spUp .5s ease 1.1s both}
+@keyframes spIn{from{transform:scale(.4) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes spGlow{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 60px rgba(212,175,55,.55)}}
+@keyframes spUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes spLn{to{width:160px}}
+/* Contador a pantalla completa */
+.card.full{position:fixed;inset:0;z-index:14;margin:0;border:0;border-radius:0;background:#000;display:flex;flex-direction:column;justify-content:center;overflow-y:auto;
+  padding:calc(30px + env(safe-area-inset-top)) 22px calc(30px + env(safe-area-inset-bottom))}
+.card.full .big[id$="Tiempo"]{font-size:min(34vw,200px)!important}
+.card.full>.label:first-child,.card.full .nofull{display:none!important}
+body.enfocado{overflow:hidden}
+.card.full #pmFase,.card.full #hiFase{font-size:18px;letter-spacing:5px}.card.full #hiRonda{font-size:15px}
 .breath{width:200px;height:200px;border-radius:50%;margin:70px auto 76px;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;transition:transform 4s linear;font-family:'Bebas Neue';font-size:34px;letter-spacing:2px}
 .rule{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}.rule .big{font-size:34px;color:var(--gold);min-width:40px}
 svg text{fill:var(--mut);font:10px Inter}
@@ -74,12 +90,8 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
 </head>
 <body>
 <div id="toast"></div>
+<div id="splash"><img src="icons/icon-512.png" alt=""><h1>MENTALIDAD <span>7</span></h1><div class="ln"></div><small>DISCIPLINA · CONCIENCIA · DECISIÓN</small></div>
 <div id="login"><img src="icons/icon-512.png" alt=""><h1 style="font-size:44px">MENTALIDAD <span style="color:var(--gold)">7</span></h1>
-  <div id="lkFace" style="display:none;flex-direction:column;align-items:center;gap:14px">
-    <p style="color:var(--mut);font-size:13px" id="lkMsg">Desbloquea con tu cara</p>
-    <button class="gold" id="btnFace" onclick="faceAction()">ENTRAR CON FACE ID</button>
-    <a style="color:var(--mut);font-size:12px;cursor:pointer;text-decoration:underline" onclick="showPin()">Usar clave</a>
-  </div>
   <div id="lkPin" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
     <p style="color:var(--mut);font-size:13px" id="lkPinMsg">Ingresa tu clave privada (solo la primera vez)</p>
     <input id="pin" type="password" placeholder="Clave" autocomplete="current-password">
@@ -164,7 +176,7 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
       <button onclick="pomoSaltar()">SALTAR</button><button onclick="pomoReiniciar()">REINICIAR</button>
     </div>
     <div class="row" style="justify-content:center;margin-top:12px"><div class="chip" id="pmLuz" onclick="pomoLuz()">Pantalla encendida</div></div>
-    <p style="color:var(--mut);font-size:12px;margin-top:10px">Rondas completadas hoy: <b id="pmRondas" style="color:var(--gold)">0</b> · Con la pantalla bloqueada te avisa por notificación.</p>
+    <p class="nofull" style="color:var(--mut);font-size:12px;margin-top:10px">Rondas completadas hoy: <b id="pmRondas" style="color:var(--gold)">0</b> · Con la pantalla bloqueada te avisa por notificación.</p>
     <div id="pmMov" style="display:none;text-align:left;margin-top:14px"><div class="label">Rutina de movilidad · 15 min</div><div class="chips" id="pmLista"></div></div>
   </div>
   <div class="card" id="cardHiit" style="text-align:center">
@@ -181,7 +193,7 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
     <div class="label" id="hiRonda" style="color:var(--mut);margin-top:4px"></div>
     <div style="height:6px;background:#222;border-radius:6px;overflow:hidden;margin:6px 0 14px"><div id="hiBar" style="height:100%;width:0;background:var(--gold)"></div></div>
     <div class="row" style="justify-content:center"><button class="gold" id="hiBtn" onclick="hiitPrincipal()">INICIAR HIIT</button><button onclick="hiitReiniciar()">REINICIAR</button></div>
-    <p style="color:var(--mut);font-size:12px;margin-top:10px">Si bloqueas el iPhone, te avisa cada cambio por notificación.</p>
+    <p class="nofull" style="color:var(--mut);font-size:12px;margin-top:10px">Si bloqueas el iPhone, te avisa cada cambio por notificación.</p>
   </div>
 </section>
 
@@ -246,63 +258,30 @@ async function api(action,extra={}){
   const j=await r.json();
   if(!j.ok){
     if(j.error==='Clave incorrecta'){ // la clave del servidor cambió: Face ID no sirve, pedir la clave nueva
-      TOKEN='';store.del('m7_token');store.del('m7_cred');showLogin();
+      TOKEN='';store.del('m7_token');showLogin();
       document.getElementById('lkPinMsg').textContent='La clave cambió en Apps Script. Ingresa la clave nueva (tus respuestas no se pierden).';
     }
     throw new Error(j.error);
   }
   return j.data;
 }
-/* ---------- FACE ID (WebAuthn / llave de acceso del iPhone) ---------- */
-const HAS_FACE=!!(window.PublicKeyCredential&&navigator.credentials);
-const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
-const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
-const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+/* ---------- ACCESO: entra directo. La clave solo se pide una vez por instalación ---------- */
 let loaded=false;
-function showLogin(){document.getElementById('login').style.display='flex';
-  const face=HAS_FACE&&TOKEN;
-  document.getElementById('lkFace').style.display=face?'flex':'none';
-  document.getElementById('lkPin').style.display=face?'none':'flex';
-  const has=!!store.get('m7_cred');
-  document.getElementById('btnFace').textContent=has?'ENTRAR CON FACE ID':'ACTIVAR FACE ID';
-  document.getElementById('lkMsg').textContent=has?'Desbloquea con tu cara':'Activa Face ID para no volver a escribir la clave';
-}
-function showPin(){document.getElementById('lkFace').style.display='none';document.getElementById('lkPin').style.display='flex'}
+function showLogin(){document.getElementById('login').style.display='flex'}
 function unlock(){document.getElementById('login').style.display='none';if(!loaded){loaded=true;cargar()}}
-async function faceCreate(){
-  const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:'Mentalidad 7'},
-    user:{id:rnd(16),name:'mentalidad7',displayName:'Mentalidad 7'},
-    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
-    authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},timeout:60000}});
-  store.set('m7_cred',b64(c.rawId));
-}
-async function faceGet(){
-  await navigator.credentials.get({publicKey:{challenge:rnd(32),userVerification:'required',timeout:60000,
-    allowCredentials:[{type:'public-key',id:unb64(store.get('m7_cred'))}]}});
-}
-async function faceAction(){
-  try{
-    if(store.get('m7_cred'))await faceGet();else{await faceCreate();toast('Face ID activado ✅')}
-    unlock();
-    api('ping').catch(()=>{});
-  }catch(e){toast('Face ID cancelado o no disponible')}
-}
 async function login(){
   TOKEN=document.getElementById('pin').value.trim();if(!TOKEN)return;
-  try{await api('ping');store.set('m7_token',TOKEN);store.del('m7_cred');document.getElementById('pin').value='';
-    if(HAS_FACE){showLogin()}else unlock();
+  try{await api('ping');store.set('m7_token',TOKEN);document.getElementById('pin').value='';unlock();
   }catch(e){toast(e.message==='Clave incorrecta'?'Clave incorrecta':'Sin conexión con la API')}
 }
-// Bloquear de nuevo si la app estuvo en segundo plano más de 1 minuto
 let hiddenAt=0;
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden)hiddenAt=Date.now();
   else{
-    if(hiddenAt&&Date.now()-hiddenAt>60000&&TOKEN&&HAS_FACE&&store.get('m7_cred'))showLogin();
     if(loaded&&diaCargado!==hoy())cargar();
   }
 });
-function logout(){if(confirm('¿Cambiar la clave de acceso?')){store.del('m7_token');store.del('m7_cred');TOKEN='';showLogin()}}
+function logout(){if(confirm('¿Cambiar la clave de acceso?')){store.del('m7_token');TOKEN='';showLogin()}}
 
 const QS=[
  {k:'q1',t:'¿Qué está pasando?',h:'Solo hechos. Sin juicio ni drama.'},
@@ -369,7 +348,6 @@ function init(){
   $('pin').onkeydown=e=>{if(e.key==='Enter')login()};
   elegirVozGuia(VOZ_GUIA);
   if(!TOKEN)showLogin();
-  else if(HAS_FACE){showLogin();if(store.get('m7_cred'))faceAction()}
   else unlock();
   window.addEventListener('hashchange',manejarHash);
 }
@@ -794,7 +772,9 @@ function pomoTick(forzado){
   }
   pomoRender();
 }
+function enfocar(){const on=!!document.querySelector('.card.full');document.body.classList.toggle('enfocado',on)}
 function pomoRender(){
+  $('cardPomo').classList.toggle('full',pomo.fase!=='idle');enfocar();
   const f=pomo.fase,fr=f==='pausa'?pomo.faseP:f,total=fr==='mov'?P_MOV:P_TRAB;
   const r=f==='idle'?P_TRAB:f==='pausa'?pomo.resto:pomo.fin-Date.now();
   $('pmTiempo').textContent=mmss(r);
@@ -860,6 +840,7 @@ function hiitTick(){
   hiitRender(s,resto);
 }
 function hiitRender(s,resto){
+  $('cardHiit').classList.toggle('full',!!hiit.on);enfocar();
   $('hiCfg').style.display=hiit.on?'none':'block';
   if(!hiit.on||!s){$('hiFase').textContent='LISTO';$('hiTiempo').textContent=mmss(hiit.cfg.w*1000);$('hiTiempo').style.color='var(--txt)';
     $('hiRonda').textContent=hiit.cfg.n+' rondas · '+hiit.cfg.w+' s / '+hiit.cfg.r+' s';$('hiBar').style.width='0';$('hiBtn').textContent='INICIAR HIIT';return}
@@ -895,6 +876,7 @@ document.addEventListener('visibilitychange',()=>{
 setInterval(()=>{if(!document.hidden&&hiit.on)hiitTick()},200);
 
 init();
+setTimeout(()=>{const sp=$('splash');sp.style.opacity='0';setTimeout(()=>sp.remove(),550)},1900);
 pomoRender();
 hiitCfgRender();hiitTick();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
