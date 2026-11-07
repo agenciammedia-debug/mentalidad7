@@ -198,7 +198,7 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
 </section>
 
 <!-- CÓDIGO -->
-<section id="v-cod" class="view"><div class="card" id="codigo"></div></section>
+<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 16</p></section>
 </div>
 
 <!-- PRIMING (obligatorio cada día) -->
@@ -451,9 +451,13 @@ if(window.speechSynthesis){elegirVoz();speechSynthesis.onvoiceschanged=elegirVoz
 // Tono suave: sube al inhalar, baja al exhalar, campana al sostener
 /* modo 'voz' (respiración, presión, visualización): audio principal, suena aunque el iPhone esté en silencio.
    modo normal (campanas de Pomodoro/HIIT): se MEZCLA con tu música (YouTube, Spotify) sin cortarla. */
+let actxModo='';
 function activarAudio(modo){
-  try{if(navigator.audioSession)navigator.audioSession.type=modo==='voz'?'playback':'ambient'}catch(e){}
-  try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
+  const tipo=modo==='voz'?'playback':'ambient';
+  try{if(navigator.audioSession)navigator.audioSession.type=tipo}catch(e){}
+  // iOS fija el modo al crear el contexto: si cambia, se crea uno nuevo (si no, seguiría cortando tu música)
+  if(actx&&actxModo!==tipo){try{actx.close()}catch(e){}actx=null}
+  try{if(!actx){actx=new(window.AudioContext||window.webkitAudioContext)();actxModo=tipo}actx.resume()}catch(e){}
   if(modo==='voz')try{if(window.speechSynthesis&&!window._vozOk){const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);window._vozOk=1}}catch(e){}
 }
 /* Voz neuronal pregrabada (audio/hombre, audio/mujer). Si falla, usa la voz del sistema. */
