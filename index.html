@@ -449,17 +449,18 @@ function decir(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel()
 function elegirVoz(){try{const v=speechSynthesis.getVoices();voz=v.find(x=>/^es[-_](MX|US|419|PE|ES)/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null}catch(e){}}
 if(window.speechSynthesis){elegirVoz();speechSynthesis.onvoiceschanged=elegirVoz}
 // Tono suave: sube al inhalar, baja al exhalar, campana al sostener
-function activarAudio(){
-  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){} // suena aunque el iPhone esté en silencio (iOS 17+)
+/* modo 'voz' (respiración, presión, visualización): audio principal, suena aunque el iPhone esté en silencio.
+   modo normal (campanas de Pomodoro/HIIT): se MEZCLA con tu música (YouTube, Spotify) sin cortarla. */
+function activarAudio(modo){
+  try{if(navigator.audioSession)navigator.audioSession.type=modo==='voz'?'playback':'ambient'}catch(e){}
   try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
-  // Desbloquea también la voz del sistema (respaldo) dentro del toque
-  try{if(window.speechSynthesis&&!window._vozOk){const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);window._vozOk=1}}catch(e){}
+  if(modo==='voz')try{if(window.speechSynthesis&&!window._vozOk){const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);window._vozOk=1}}catch(e){}
 }
 /* Voz neuronal pregrabada (audio/hombre, audio/mujer). Si falla, usa la voz del sistema. */
 let VOZ_GUIA=store.get('m7_voz')||'hombre',bufs={},fuente=null;
 function elegirVozGuia(v){VOZ_GUIA=v;store.set('m7_voz',v);document.querySelectorAll('#voces .chip').forEach(c=>c.classList.toggle('on',c.dataset.voz===v))}
 function cargarClip(n){return cargarRuta(VOZ_GUIA+'/'+n)}
-async function sfx(n){try{activarAudio();const b=await cargarRuta('fx/'+n);const s=actx.createBufferSource();s.buffer=b;s.connect(actx.destination);s.start();await new Promise(r=>s.onended=r)}catch(e){}}
+async function sfx(n){try{if(!actx)activarAudio();const b=await cargarRuta('fx/'+n);const s=actx.createBufferSource();s.buffer=b;s.connect(actx.destination);s.start();await new Promise(r=>s.onended=r)}catch(e){}}
 function cargarRuta(k){
   if(bufs[k])return bufs[k];
   bufs[k]=fetch('audio/'+k+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()})
@@ -475,7 +476,7 @@ async function clip(n,texto){
     await new Promise(r=>{s.onended=r;s.start()});
   }catch(e){if(texto)await decirEspera(texto)}
 }
-function probarVoz(){activarAudio();clip('prueba','Hola. Esta será tu voz guía.')}
+function probarVoz(){activarAudio('voz');clip('prueba','Hola. Esta será tu voz guía.')}
 // Fondo ambiental suave para la visualización
 let pad=null;
 function ambiente(on){
@@ -498,7 +499,7 @@ function tono(tipo,seg){
 async function respirar(){
   if(breathing)return;breathing=true;$('btnB').disabled=true;
   // Desbloquear audio y voz en el toque (requisito de iPhone)
-  activarAudio();precargar(['r_inicio','inhala','sosten','exhala','r_fin']);
+  activarAudio('voz');precargar(['r_inicio','inhala','sosten','exhala','r_fin']);
   let wl=null;try{wl=await navigator.wakeLock.request('screen')}catch(e){}
   const c=$('circ'),w=ms=>new Promise(r=>setTimeout(r,ms));
   await clip('r_inicio','Cierra los ojos. Comenzamos.');await w(800);
@@ -611,7 +612,7 @@ function abrirPresion(){
   abrirOvl('oPres');
 }
 async function presionRespira(){
-  if(presOn)return;presOn=true;$('prBtn').disabled=true;activarAudio();precargar(['p_inicio','inhala','exhala_lento','p_fin']);
+  if(presOn)return;presOn=true;$('prBtn').disabled=true;activarAudio('voz');precargar(['p_inicio','inhala','exhala_lento','p_fin']);
   let wl=null;try{wl=await navigator.wakeLock.request('screen')}catch(e){}
   const c=$('prCirc');await clip('p_inicio','Cierra los ojos. Suelta los hombros.');await espera(600);
   for(let i=0;i<6&&presOn&&$('oPres').classList.contains('on');i++){
@@ -637,7 +638,7 @@ function decirEspera(t){return new Promise(res=>{
     u.onend=fin;u.onerror=fin;setTimeout(fin,Math.max(4000,t.length*110));speechSynthesis.speak(u)}catch(e){res()}})}
 async function visualizar(){
   if(visOn){visOn=false;visRun++;callarVoz();ambiente(false);visReset();return}
-  visOn=true;const run=++visRun,vivo=()=>visOn&&run===visRun;$('btnV').textContent='DETENER';activarAudio();
+  visOn=true;const run=++visRun,vivo=()=>visOn&&run===visRun;$('btnV').textContent='DETENER';activarAudio('voz');
   const guion=[
     ['v1','Cierra los ojos. Respira profundo, tres veces. Deja que el cuerpo se relaje.',8000],
     ['v2','Ahora imagina que ya lograste tu meta principal. Ya es real. Ya sucedió.',8000],
@@ -790,7 +791,7 @@ function pomoRender(){
 }
 pomoT=setInterval(()=>{if(!document.hidden)pomoTick()},500);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){pomoTick();if($('pmLuz').classList.contains('on'))pomoLuz(true)}});
-document.addEventListener('touchend',()=>activarAudio(),{passive:true});
+document.addEventListener('touchend',()=>{try{actx&&actx.state!=='running'&&actx.resume()}catch(e){}},{passive:true});
 
 
 /* ---------- HIIT ---------- */
