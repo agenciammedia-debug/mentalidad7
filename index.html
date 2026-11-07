@@ -198,7 +198,7 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
 </section>
 
 <!-- CÓDIGO -->
-<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 16</p></section>
+<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 17</p></section>
 </div>
 
 <!-- PRIMING (obligatorio cada día) -->
@@ -480,7 +480,13 @@ async function clip(n,texto){
     await new Promise(r=>{s.onended=r;s.start()});
   }catch(e){if(texto)await decirEspera(texto)}
 }
-function probarVoz(){activarAudio('voz');clip('prueba','Hola. Esta será tu voz guía.')}
+function probarVoz(){activarAudio('voz');clip('prueba','Hola. Esta será tu voz guía.').then(liberarVoz)}
+/* Al terminar la voz guía se suelta el audio del iPhone, para que tu música (YouTube, Spotify) no se corte al tocar la app */
+function liberarVoz(){
+  if(actxModo!=='playback'||breathing||visOn||presOn)return;
+  callarVoz();try{actx.close()}catch(e){}actx=null;actxModo='';
+  try{if(navigator.audioSession)navigator.audioSession.type='ambient'}catch(e){}
+}
 // Fondo ambiental suave para la visualización
 let pad=null;
 function ambiente(on){
@@ -509,9 +515,10 @@ async function respirar(){
   await clip('r_inicio','Cierra los ojos. Comenzamos.');await w(800);
   const fases=[['INHALA',1.3,'inhala','Inhala'],['SOSTÉN',1.3,'sosten','Sostén'],['EXHALA',1,'exhala','Exhala'],['SOSTÉN',1,'sosten','Sostén']];
   for(let n=0;n<4;n++)for(const[f,s,a,v]of fases){c.textContent=f;c.style.transform=`scale(${s})`;clip(a,v);tono(f,4);await w(4000)}
-  c.textContent='LISTO';c.style.transform='scale(1)';clip('r_fin','Listo. Mente fría. Ahora decide.');
+  c.textContent='LISTO';c.style.transform='scale(1)';
   try{wl&&wl.release()}catch(e){}
   breathing=false;$('btnB').disabled=false;toast('Mente fría. Ahora decide.');
+  clip('r_fin','Listo. Mente fría. Ahora decide.').then(liberarVoz);
 }
 
 /* ---------- UTILIDADES ---------- */
@@ -522,7 +529,7 @@ const espera=ms=>new Promise(r=>setTimeout(r,ms));
 function campo(k,t,h){return`<div class="card q"><h2>${t}</h2><p>${h}</p><textarea id="t_${k}" placeholder="Escribe o dicta…"></textarea>
   <div class="row"><button id="d_${k}" onclick="dictar('${k}')">DICTAR TEXTO</button></div></div>`}
 function abrirOvl(id){$(id).classList.add('on');$(id).scrollTop=0;document.body.style.overflow='hidden'}
-function cerrarOvl(id){$(id).classList.remove('on');if(!document.querySelector('.ovl.on'))document.body.style.overflow='';if(sr)sr.stop()}
+function cerrarOvl(id){$(id).classList.remove('on');if(!document.querySelector('.ovl.on'))document.body.style.overflow='';if(sr)sr.stop();if(id==='oPres'){presOn=false;liberarVoz()}}
 
 /* ---------- METAS ---------- */
 function metasLista(){return[METAS.anual,...(METAS.semana||[]).map(x=>x.t)].filter(Boolean)}
@@ -624,7 +631,9 @@ async function presionRespira(){
     c.style.transitionDuration='6s';c.textContent='EXHALA';c.style.transform='scale(1)';clip('exhala_lento','Exhala lento');tono('EXHALA',6);await espera(6000);
   }
   try{wl&&wl.release()}catch(e){}
-  if($('oPres').classList.contains('on')){clip('p_fin','Bien. Ahora piensa con cabeza fría.');presionPreguntas()}
+  presOn=false;
+  if($('oPres').classList.contains('on')){presionPreguntas();await clip('p_fin','Bien. Ahora piensa con cabeza fría.')}
+  liberarVoz();
 }
 function presionPreguntas(){presOn=false;$('prB').style.display='none';$('prQ').style.display='block';$('oPres').scrollTop=0}
 function guardarPresion(){
@@ -641,7 +650,7 @@ function decirEspera(t){return new Promise(res=>{
     u.lang='es-ES';u.rate=.82;u.pitch=.9;if(voz)u.voice=voz;let ok=false;const fin=()=>{if(!ok){ok=true;res()}};
     u.onend=fin;u.onerror=fin;setTimeout(fin,Math.max(4000,t.length*110));speechSynthesis.speak(u)}catch(e){res()}})}
 async function visualizar(){
-  if(visOn){visOn=false;visRun++;callarVoz();ambiente(false);visReset();return}
+  if(visOn){visOn=false;visRun++;callarVoz();ambiente(false);visReset();setTimeout(liberarVoz,3300);return}
   visOn=true;const run=++visRun,vivo=()=>visOn&&run===visRun;$('btnV').textContent='DETENER';activarAudio('voz');
   const guion=[
     ['v1','Cierra los ojos. Respira profundo, tres veces. Deja que el cuerpo se relaje.',8000],
@@ -661,7 +670,7 @@ async function visualizar(){
   if(!vivo()){try{wl&&wl.release()}catch(e){}return}
   ambiente(false);tono('SOSTÉN',1);
   try{wl&&wl.release()}catch(e){}
-  visOn=false;visReset();
+  visOn=false;visReset();setTimeout(liberarVoz,3300);
 }
 
 /* ---------- REVISIÓN SEMANAL ---------- */
@@ -795,7 +804,9 @@ function pomoRender(){
 }
 pomoT=setInterval(()=>{if(!document.hidden)pomoTick()},500);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){pomoTick();if($('pmLuz').classList.contains('on'))pomoLuz(true)}});
-document.addEventListener('touchend',()=>{try{actx&&actx.state!=='running'&&actx.resume()}catch(e){}},{passive:true});
+document.addEventListener('touchend',()=>{try{actx&&actxModo==='ambient'&&actx.state!=='running'&&actx.resume()}catch(e){}},{passive:true});
+try{if(navigator.audioSession)navigator.audioSession.type='ambient'}catch(e){}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!breathing&&!visOn&&!presOn)liberarVoz()});
 
 
 /* ---------- HIIT ---------- */
