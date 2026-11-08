@@ -194,12 +194,12 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
     <div style="height:6px;background:#222;border-radius:6px;overflow:hidden;margin:6px 0 14px"><div id="hiBar" style="height:100%;width:0;background:var(--gold)"></div></div>
     <div class="row" style="justify-content:center"><button class="gold" id="hiBtn" onclick="hiitPrincipal()">INICIAR HIIT</button><button onclick="hiitReiniciar()">REINICIAR</button></div>
     <div class="row" style="justify-content:center;margin-top:12px"><div class="chip" id="hiLuz" onclick="hiitLuz()">Pantalla encendida</div></div>
-    <p class="nofull" style="color:var(--mut);font-size:12px;margin-top:10px">Si bloqueas el iPhone, te avisa cada cambio por notificación.</p>
+    <p class="nofull" style="color:var(--mut);font-size:12px;margin-top:10px">Te llega una notificación al iniciar cada trabajo, cada descanso y al terminar.</p>
   </div>
 </section>
 
 <!-- CÓDIGO -->
-<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 19</p></section>
+<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 20</p></section>
 </div>
 
 <!-- PRIMING (obligatorio cada día) -->
@@ -832,9 +832,9 @@ function beep(f=880,d=.15){if(!actx)return;const t=actx.currentTime,o=actx.creat
   o.type='square';o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d)}
 function hiitPrincipal(){
   activarAudio();
-  if(!hiit.on){hiit.on=true;hiit.inicio=Date.now();hiit.pausaEn=0;hiit.pausaTot=0;hiit.idx=-1;hiit.seg=-1;toast('Prepárate 🥊')}
-  else if(hiit.pausaEn){hiit.pausaTot+=Date.now()-hiit.pausaEn;hiit.pausaEn=0}
-  else hiit.pausaEn=Date.now();
+  if(!hiit.on){hiit.on=true;hiit.inicio=Date.now();hiit.pausaEn=0;hiit.pausaTot=0;hiit.idx=-1;hiit.seg=-1;toast('Prepárate 🥊');hiitPush()}
+  else if(hiit.pausaEn){hiit.pausaTot+=Date.now()-hiit.pausaEn;hiit.pausaEn=0;hiitPush()}
+  else{hiit.pausaEn=Date.now();hiitSinPush()}
   hiitGuardar();hiitTick();
 }
 let hiitWl=null;
@@ -844,7 +844,9 @@ async function hiitLuz(on){
   catch(e){el.classList.remove('on');if(on)toast('Tu iPhone no permite mantener la pantalla encendida')}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('hiLuz').classList.contains('on')&&hiit.on)hiitLuz(true)});
-function hiitReiniciar(){hiitLuz(false);if(hiit.push){api('hiitcancel').catch(()=>{});hiit.push=false}hiit.on=false;hiit.pausaEn=0;hiitGuardar();hiitRender()}
+function hiitPush(){hiit.push=true;api('hiit',{avisos:hiitAvisos()}).catch(()=>toast('HIIT activo (sin notificaciones)'))}
+function hiitSinPush(){if(hiit.push){api('hiitcancel').catch(()=>{});hiit.push=false}}
+function hiitReiniciar(){hiitLuz(false);hiitSinPush();hiit.on=false;hiit.pausaEn=0;hiitGuardar();hiitRender()}
 function hiitTick(){
   if(!hiit.on)return hiitRender();
   const a=hiitSegs(),el=hiitTranscurrido(),tot=hiitTotal();
@@ -859,7 +861,7 @@ function hiitTick(){
     if(vivo&&!hiit.pausaEn){if(s.t==='trab')sfx('campana_inicio');else if(s.t==='desc')sfx('campana_fin')}}
   const sec=Math.ceil(resto);
   if(sec!==hiit.seg&&!hiit.pausaEn){hiit.seg=sec;
-    if((s.t==='prep'||s.t==='desc')&&sec<=3&&sec>=1)beep(sec===1?1200:880);
+    if(sec<=3&&sec>=1)beep(sec===1?1200:880);
     if(s.t==='trab'&&sec===10&&s.d>=30)sfx('tablas');}
   hiitRender(s,resto);
 }
@@ -875,7 +877,7 @@ function hiitRender(s,resto){
   $('hiRonda').textContent=s.t==='prep'?'Empieza en '+Math.ceil(resto)+' s':'Ronda '+s.i+' / '+hiit.cfg.n;
   $('hiBtn').textContent=hiit.pausaEn?'CONTINUAR':'PAUSAR';
 }
-// Notificaciones: se programan solo cuando la app pasa a segundo plano, y se cancelan al volver
+// Notificaciones (para sentirlas en el reloj): inicio de cada trabajo, cada descanso y el final
 function hiitAvisos(){
   const a=hiitSegs(),el=hiitTranscurrido(),base=Date.now()-el*1000,n=hiit.cfg.n,out=[];
   a.forEach(x=>{if(x.s<=el)return;
@@ -884,19 +886,7 @@ function hiitAvisos(){
   out.push({at:base+hiitTotal()*1000,titulo:'🏆 HIIT completado',mensaje:`${n} rondas. Cuerpo y mente de campeón.`});
   return out;
 }
-document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){
-    if(hiit.on&&!hiit.pausaEn&&TOKEN){
-      const body=JSON.stringify({action:'hiit',token:TOKEN,avisos:hiitAvisos()});
-      let ok=false;try{ok=navigator.sendBeacon(API_URL,new Blob([body],{type:'text/plain'}))}catch(e){}
-      if(!ok)fetch(API_URL,{method:'POST',body,keepalive:true}).catch(()=>{});
-      hiit.push=true;hiitGuardar();
-    }
-  }else{
-    if(hiit.push){api('hiitcancel').catch(()=>{});hiit.push=false;hiitGuardar()}
-    hiitTick();
-  }
-});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)hiitTick()});
 setInterval(()=>{if(!document.hidden&&hiit.on)hiitTick()},200);
 
 init();
