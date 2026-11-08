@@ -193,12 +193,13 @@ input.txt,select{width:100%;background:#0a0a0a;border:1px solid var(--line);colo
     <div class="label" id="hiRonda" style="color:var(--mut);margin-top:4px"></div>
     <div style="height:6px;background:#222;border-radius:6px;overflow:hidden;margin:6px 0 14px"><div id="hiBar" style="height:100%;width:0;background:var(--gold)"></div></div>
     <div class="row" style="justify-content:center"><button class="gold" id="hiBtn" onclick="hiitPrincipal()">INICIAR HIIT</button><button onclick="hiitReiniciar()">REINICIAR</button></div>
+    <div class="row" style="justify-content:center;margin-top:12px"><div class="chip" id="hiLuz" onclick="hiitLuz()">Pantalla encendida</div></div>
     <p class="nofull" style="color:var(--mut);font-size:12px;margin-top:10px">Si bloqueas el iPhone, te avisa cada cambio por notificación.</p>
   </div>
 </section>
 
 <!-- CÓDIGO -->
-<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 17</p></section>
+<section id="v-cod" class="view"><div class="card" id="codigo"></div><p style="text-align:center;color:var(--mut);font-size:11px;letter-spacing:2px">VERSIÓN 19</p></section>
 </div>
 
 <!-- PRIMING (obligatorio cada día) -->
@@ -836,12 +837,19 @@ function hiitPrincipal(){
   else hiit.pausaEn=Date.now();
   hiitGuardar();hiitTick();
 }
-function hiitReiniciar(){if(hiit.push){api('hiitcancel').catch(()=>{});hiit.push=false}hiit.on=false;hiit.pausaEn=0;hiitGuardar();hiitRender()}
+let hiitWl=null;
+async function hiitLuz(on){
+  const el=$('hiLuz');on=on===undefined?!el.classList.contains('on'):on;
+  try{if(on){hiitWl=await navigator.wakeLock.request('screen');el.classList.add('on')}else{hiitWl&&hiitWl.release();hiitWl=null;el.classList.remove('on')}}
+  catch(e){el.classList.remove('on');if(on)toast('Tu iPhone no permite mantener la pantalla encendida')}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('hiLuz').classList.contains('on')&&hiit.on)hiitLuz(true)});
+function hiitReiniciar(){hiitLuz(false);if(hiit.push){api('hiitcancel').catch(()=>{});hiit.push=false}hiit.on=false;hiit.pausaEn=0;hiitGuardar();hiitRender()}
 function hiitTick(){
   if(!hiit.on)return hiitRender();
   const a=hiitSegs(),el=hiitTranscurrido(),tot=hiitTotal();
   if(el>=tot){
-    const vivo=el-tot<2;hiit.on=false;hiitGuardar();
+    const vivo=el-tot<2;hiit.on=false;hiitGuardar();hiitLuz(false);
     if(vivo)sfx('campana_fin');toast('HIIT completado 🏆');
     api('log',{tipo:'Hiit',fila:[hiit.cfg.n,hiit.cfg.w,hiit.cfg.r,Math.round((tot-HI_PREP)/60)]}).catch(()=>{});
     return hiitRender();
